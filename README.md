@@ -76,14 +76,14 @@ Note: Hotkey is fixed by platform (Cmd+Shift+E on macOS, Ctrl+Shift+E on Windows
 ```
 ClipToEpub/
 ├── src/
-│   ├── menubar_app.py           # macOS menu bar app (Phase 3)
+│   ├── menubar_app.py           # macOS menu bar app
 │   ├── tray_app_windows.py      # Windows tray app (PySide6)
-│   ├── clipboard_to_epub*.py    # Phase 1-4 converters
+│   ├── converter.py             # Unified converter module
 │   ├── config_window_qt.py      # Settings (Qt, preferred)
 │   ├── config_window.py         # Settings (Tkinter, fallback)
 │   ├── edit_window.py           # Editor UI (Tkinter)
 │   ├── history_manager.py       # Conversion history
-│   ├── image_handler.py         # Image processing (Phase 4)
+│   ├── image_handler.py         # Image processing
 │   ├── update_checker.py        # Update management
 │   ├── paths.py                 # Cross-platform config/history paths
 │   └── imp_patch.py             # Compatibility patch
@@ -121,7 +121,7 @@ ClipToEpub/
 - Windows tray app (QSystemTrayIcon)
 
 ### Optional / Advanced
-- Phase 4 modules for images/OCR and URL enhancements (`src/clipboard_to_epub_v4.py`)
+- Advanced features (images/OCR, URL extraction, accumulator, cache, history) are built into the unified converter and can be enabled via flags.
 
 ## Troubleshooting
 
@@ -172,5 +172,5 @@ For issues or questions:
 
 ---
 
-**Current Version:** 1.0.0 (Phase 3: Menubar + Windows Tray)
+**Current Version:** 1.0.0 (Menubar + Windows Tray)
 **Last Updated:** November 2025

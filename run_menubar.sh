@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Clipboard to ePub - Phase 3 Menu Bar Launcher
+# Clipboard to ePub - Menu Bar Launcher
 # This script launches the menu bar application
 
 # Colors for output
@@ -23,11 +23,25 @@ fi
 # Activate virtual environment
 source venv/bin/activate
 
-# Check if required packages are installed
-python -c "import rumps, pync" 2>/dev/null
+# Check if required packages are installed; install if missing
+python - <<'PY'
+import sys
+required = [
+    'rumps','pync',
+    'markdown2','striprtf','bs4','requests','newspaper3k','nltk'
+]
+missing = []
+for m in required:
+    try:
+        __import__(m)
+    except Exception:
+        missing.append(m)
+if missing:
+    sys.exit(1)
+PY
 if [ $? -ne 0 ]; then
-    echo -e "${BLUE}ℹ️  Installing Phase 3 dependencies...${NC}"
-    pip install rumps pync
+    echo -e "${BLUE}Instalando dependencias de la aplicación...${NC}"
+    pip install -r requirements.txt
 fi
 
 # Create default configuration if it doesn't exist

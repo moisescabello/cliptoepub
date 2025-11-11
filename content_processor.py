@@ -7,6 +7,7 @@ Handles intelligent content detection and conversion for different formats
 import re
 import html
 import chardet
+import logging
 from typing import List, Tuple, Dict, Optional
 from datetime import datetime
 from urllib.parse import urlparse
@@ -25,6 +26,10 @@ try:
 except LookupError:
     print("Downloading NLTK punkt tokenizer...")
     nltk.download('punkt', quiet=True)
+
+
+# Module logger
+logger = logging.getLogger(__name__)
 
 
 class ContentDetector:
@@ -152,8 +157,16 @@ class ContentConverter:
         metadata = {'source': url, 'type': 'web_article'}
 
         try:
-            # Use newspaper3k to extract article
-            article = Article(url)
+            # Use newspaper3k to extract article with a sane timeout
+            try:
+                from newspaper import Config  # type: ignore
+                cfg = Config()
+                # Timeout in seconds for requests inside newspaper3k
+                cfg.request_timeout = 10  # type: ignore[attr-defined]
+                article = Article(url, config=cfg)
+            except Exception:
+                # Fallback: construct without Config if unavailable
+                article = Article(url)
             article.download()
             article.parse()
 
@@ -213,7 +226,7 @@ class ContentConverter:
                 error_html = f"""
                 <h1>Error Loading URL</h1>
                 <p>Could not load content from: <a href="{html.escape(url)}">{html.escape(url)}</a></p>
-                <p>Error: {html.escape(str(e))}</p>
+                <p>Error: {html.escape(str(e2))}</p>
                 """
                 return error_html, metadata
 

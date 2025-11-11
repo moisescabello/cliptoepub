@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Image Handler Module for Clipboard to ePub - Phase 4
+Image Handler Module for Clipboard to ePub
 Handles image detection, optimization, and embedding in ePub files
 """
 

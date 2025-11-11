@@ -36,8 +36,8 @@ echo -e "${BLUE}=================================================${NC}"
 echo
 
 # Check if we're in the right directory
-if [ ! -f "setup_simple.py" ]; then
-    print_error "setup_simple.py not found. Please run this script from the project root."
+if [ ! -f "setup.py" ]; then
+    print_error "setup.py not found. Please run this script from the project root."
     exit 1
 fi
 
@@ -91,10 +91,10 @@ rm -rf *.egg-info
 rm -rf __pycache__ */__pycache__ */*/__pycache__
 print_success "Previous builds cleaned"
 
-# Build the application with the simplified setup
-print_status "Building application with simplified py2app..."
+# Build the application with py2app
+print_status "Building application with py2app..."
 echo
-python setup_simple.py py2app 2>&1 | while read line; do
+python setup.py py2app 2>&1 | while read line; do
     # Filter out common warnings
     if [[ ! "$line" =~ "UserWarning" ]] && [[ ! "$line" =~ "No package named" ]]; then
         echo "  $line"
@@ -109,17 +109,13 @@ else
 fi
 
 # Check if the app was created
-APP_PATH="dist/Clipboard to ePub.app"
+APP_PATH="dist/ClipToEpub.app"
 if [ -d "$APP_PATH" ]; then
     print_success "Application created at: $APP_PATH"
 
     # Get app size
     APP_SIZE=$(du -sh "$APP_PATH" 2>/dev/null | cut -f1 || echo "Unknown")
     print_status "Application size: $APP_SIZE"
-
-    # Create a copy with simple name for easier access
-    cp -r "$APP_PATH" "dist/ClipboardToEpub.app" 2>/dev/null || true
-    print_success "Created copy at: dist/ClipboardToEpub.app"
 else
     print_error "Application not found at expected location"
     print_warning "Checking for alternative build output..."

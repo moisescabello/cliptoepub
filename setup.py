@@ -96,8 +96,7 @@ OPTIONS = {
         'objc',  # PyObjC bridge
         'lxml_html_clean',  # Clean HTML module
         'src.imp_patch',  # Compatibility patch for imp
-        'src.clipboard_to_epub_v3',
-        'src.clipboard_to_epub_v4',
+        'src.converter',
         'src.config_window',
         'src.edit_window',
         'src.history_manager',

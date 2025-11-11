@@ -9,7 +9,7 @@ block_cipher = None
 project_root = os.path.abspath('.')
 
 a = Analysis(
-    ['src/clipboard_to_epub_v3.py'],
+    ['src/tray_app_windows.py'],
     pathex=[project_root],
     binaries=[],
     datas=[
@@ -57,4 +57,3 @@ coll = COLLECT(
     upx=False,
     name='ClipToEpub'
 )
-

@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 ClipToEpub - Menu Bar Application
-Phase 3: User Interface Implementation
+Unified converter backend
 """
 
 # Import compatibility patch for 'imp' module first
@@ -27,7 +27,7 @@ import pync
 # Add parent directory to path for imports
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from src.clipboard_to_epub_v3 import ClipboardToEpubConverter
+from src.converter import ClipboardToEpubConverter
 import paths
 
 
@@ -112,12 +112,36 @@ class ClipToEpubApp(rumps.App):
     def init_converter(self):
         """Initialize the converter with current configuration"""
         try:
+            # Parse hotkey string into pynput combo for accuracy
+            def parse_hotkey_string(text):
+                try:
+                    from pynput import keyboard
+                except Exception:
+                    return None
+                if not text:
+                    return None
+                parts = [p.strip().lower() for p in str(text).split('+') if p.strip()]
+                combo = set()
+                for p in parts:
+                    if p in ("ctrl", "control"):
+                        combo.add(keyboard.Key.ctrl)
+                    elif p in ("cmd", "command", "meta"):
+                        combo.add(keyboard.Key.cmd)
+                    elif p == "shift":
+                        combo.add(keyboard.Key.shift)
+                    elif len(p) == 1:
+                        combo.add(keyboard.KeyCode.from_char(p))
+                return combo or None
+
+            hotkey_combo = parse_hotkey_string(self.config.get("hotkey"))
+
             self.converter = ClipboardToEpubConverter(
                 output_dir=self.config["output_directory"],
                 default_author=self.config["author"],
                 default_language=self.config["language"],
                 default_style=self.config["style"],
-                chapter_words=self.config["chapter_words"]
+                chapter_words=self.config["chapter_words"],
+                hotkey_combo=hotkey_combo,
             )
         except Exception as e:
             print(f"Error initializing converter: {e}")
@@ -194,15 +218,15 @@ class ClipToEpubApp(rumps.App):
                 # Trigger conversion in the converter
                 result = self.converter.convert_clipboard_content()
 
-                if result and self.config["show_notifications"]:
-                    self.notify(
-                        "ePub Created",
-                        f"File saved: {os.path.basename(result)}"
-                    )
-
-                    # Update recent menu
+                if result:
+                    # Notify optionally
+                    if self.config["show_notifications"]:
+                        self.notify(
+                            "ePub Created",
+                            f"File saved: {os.path.basename(result)}"
+                        )
+                    # Update recent menu regardless of notifications
                     self.update_recent_menu()
-
                     # Auto-open if configured
                     if self.config["auto_open"]:
                         self.open_file(result)
@@ -316,7 +340,7 @@ class ClipToEpubApp(rumps.App):
         """Show about dialog"""
         rumps.alert(
             "Clipboard to ePub",
-            "Version 1.0.0 (Phase 3)\n\n"
+            "Version 1.0.0\n\n"
             "Convert clipboard content to ePub format with a single hotkey.\n\n"
             f"Hotkey: {self.config['hotkey'].upper()}\n"
             f"Output: {self.config['output_directory']}\n\n"
@@ -330,14 +354,15 @@ class ClipToEpubApp(rumps.App):
                 try:
                     # Set up the conversion callback
                     def on_conversion(filepath):
-                        if filepath and self.config["show_notifications"]:
-                            self.notify(
-                                "ePub Created",
-                                f"File saved: {os.path.basename(filepath)}"
-                            )
-                            # Update recent menu
+                        if filepath:
+                            # Notify optionally
+                            if self.config["show_notifications"]:
+                                self.notify(
+                                    "ePub Created",
+                                    f"File saved: {os.path.basename(filepath)}"
+                                )
+                            # Update recent menu regardless
                             rumps.Timer(lambda _: self.update_recent_menu(), 0.1).start()
-
                             # Auto-open if configured
                             if self.config["auto_open"]:
                                 subprocess.run(["open", filepath])

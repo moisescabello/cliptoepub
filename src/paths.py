@@ -30,7 +30,8 @@ def _appdata_dir() -> Path:
 
 def get_default_output_dir() -> Path:
     """Default output directory for generated ePubs."""
-    return Path.home() / "Documents" / "ClipToEpubs"
+    # Align with project docs and scripts: ~/Documents/ClipboardEpubs
+    return Path.home() / "Documents" / "ClipboardEpubs"
 
 
 def get_config_path() -> Path:

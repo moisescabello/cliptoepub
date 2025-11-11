@@ -2,7 +2,7 @@
 """
 Windows System Tray application for ClipToEpub
 
-Implements a QSystemTrayIcon with menu actions, uses the Phase 3 converter
+Implements a QSystemTrayIcon with menu actions, using the unified converter
 for hotkeys and conversions. Configuration and history paths are shared via
 src/paths.py to keep parity with macOS.
 """
@@ -18,15 +18,22 @@ from typing import Optional
 
 # Ensure running on Windows
 if not sys.platform.startswith("win"):
-    print("This tray application is intended for Windows.")
+    # Avoid importing Qt on non-Windows environments
+    if __name__ == "__main__":
+        print("This tray application is intended for Windows.")
+        sys.exit(0)
 
-from PySide6.QtGui import QIcon, QAction
-from PySide6.QtWidgets import QApplication, QMenu, QSystemTrayIcon
-from PySide6.QtCore import QTimer
+try:
+    from PySide6.QtGui import QIcon, QAction
+    from PySide6.QtWidgets import QApplication, QMenu, QSystemTrayIcon
+    from PySide6.QtCore import QTimer
+    HAVE_QT = True
+except Exception as e:
+    HAVE_QT = False
 
 # When executed directly (python src/tray_app_windows.py), src/ is on sys.path
 import paths
-from clipboard_to_epub_v3 import ClipboardToEpubConverter
+from converter import ClipboardToEpubConverter
 
 
 DEFAULT_CONFIG = {
@@ -316,10 +323,15 @@ class WindowsTrayApp:
 
 
 def main():
+    if not sys.platform.startswith("win"):
+        print("This tray application is intended for Windows.")
+        return 0
+    if not HAVE_QT:
+        print("PySide6 is not available. Please install PySide6 to run the tray app.")
+        return 1
     app = WindowsTrayApp()
-    sys.exit(app.app.exec())
+    return app.app.exec()
 
 
 if __name__ == "__main__":
-    main()
-
+    sys.exit(main())

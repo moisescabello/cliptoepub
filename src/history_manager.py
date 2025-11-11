@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-History Manager for Clipboard to ePub - Phase 4
+History Manager for Clipboard to ePub
 Manages conversion history and multi-clip combining functionality
 """
 
@@ -12,7 +12,10 @@ from datetime import datetime, timedelta
 from typing import List, Dict, Optional, Any
 from collections import deque
 import threading
-import paths
+try:
+    from src import paths as paths  # type: ignore
+except Exception:
+    import paths  # type: ignore
 
 logger = logging.getLogger('HistoryManager')
 

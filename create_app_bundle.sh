@@ -83,9 +83,6 @@ cd "$RESOURCES_DIR"
 # Try menubar app first
 if [ -f "src/menubar_app.py" ]; then
     python src/menubar_app.py
-# Fallback to basic converter
-elif [ -f "src/clipboard_to_epub.py" ]; then
-    python src/clipboard_to_epub.py
 else
     osascript -e 'display dialog "Application files not found!" buttons {"OK"} default button "OK"'
     exit 1

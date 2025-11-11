@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Pre-conversion Edit Window for Clipboard to ePub - Phase 4
+Pre-conversion Edit Window for Clipboard to ePub
 Provides a GUI for editing and previewing content before conversion
 """
 

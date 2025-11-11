@@ -14,6 +14,7 @@ from pathlib import Path
 from typing import Dict, Optional, Callable
 import webbrowser
 import paths
+import tempfile
 
 # Configure logging
 logger = logging.getLogger(__name__)
@@ -224,8 +225,10 @@ class UpdateChecker:
             Path to downloaded file or None on error
         """
         try:
-            # Download to temporary location
-            download_path = Path('/tmp') / f"ClipboardToEpub-update-{datetime.now().strftime('%Y%m%d%H%M%S')}.dmg"
+            # Download to temporary location (cross-platform temp dir)
+            download_path = Path(tempfile.gettempdir()) / (
+                f"ClipboardToEpub-update-{datetime.now().strftime('%Y%m%d%H%M%S')}.dmg"
+            )
 
             logger.info(f"Downloading update from {download_url}")
 

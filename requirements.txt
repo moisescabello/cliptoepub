@@ -7,6 +7,25 @@ pynput==1.7.6         # Global hotkey capture
 lxml==4.9.3           # Required by ebooklib for better XML handling
 python-dateutil==2.8.2 # Better date handling for metadata
 
+# Core processing (used by Phase 2/3/4 modules)
+markdown2             # Markdown parsing
+striprtf              # RTF to text conversion
+beautifulsoup4        # HTML parsing (bs4)
+requests              # HTTP requests
+newspaper3k           # URL content extraction
+nltk                  # Natural language processing
+chardet               # Encoding detection
+lxml_html_clean       # HTML cleaning for newer lxml
+
+# macOS menubar app
+rumps                 # Menu bar interface
+pync                  # macOS notifications
+
+# Optional advanced features
+Pillow                # Image processing
+aiofiles              # Async file operations
+pytesseract           # OCR support
+
 # Development dependencies
 black==23.11.0        # Code formatting
 flake8==6.1.0         # Linting
