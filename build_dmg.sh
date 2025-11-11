@@ -25,23 +25,23 @@ NC='\033[0m'
 
 # Function to print colored output
 print_status() {
-    echo -e "${BLUE}ℹ️  $1${NC}"
+    echo -e "${BLUE}[INFO] $1${NC}"
 }
 
 print_success() {
-    echo -e "${GREEN}✅ $1${NC}"
+    echo -e "${GREEN}[OK] $1${NC}"
 }
 
 print_error() {
-    echo -e "${RED}❌ $1${NC}"
+    echo -e "${RED}[ERROR] $1${NC}"
 }
 
 print_warning() {
-    echo -e "${YELLOW}⚠️  $1${NC}"
+    echo -e "${YELLOW}[WARN] $1${NC}"
 }
 
 echo -e "${BLUE}=================================================${NC}"
-echo -e "${BLUE}📀 Creating DMG for ClipToEpub${NC}"
+echo -e "${BLUE}Creating DMG for ClipToEpub${NC}"
 echo -e "${BLUE}=================================================${NC}"
 echo
 
@@ -147,7 +147,7 @@ def create_dmg_background():
     # Save image
     os.makedirs('resources', exist_ok=True)
     img.save('resources/dmg_background.png')
-    print("✅ Created DMG background image")
+    print("[OK] Created DMG background image")
 
 create_dmg_background()
 PYTHON_END
@@ -250,7 +250,7 @@ DMG_SIZE=$(du -h "${DMG_NAME}.dmg" | cut -f1)
 
 echo
 echo -e "${BLUE}=================================================${NC}"
-echo -e "${GREEN}✅ DMG created successfully!${NC}"
+echo -e "${GREEN}[OK] DMG created successfully!${NC}"
 echo -e "${BLUE}=================================================${NC}"
 echo
 echo "DMG Details:"

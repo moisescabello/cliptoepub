@@ -6,7 +6,6 @@ Handles intelligent content detection and conversion for different formats
 
 import re
 import html
-import chardet
 import logging
 from typing import List, Tuple, Dict, Optional
 from datetime import datetime
@@ -18,15 +17,8 @@ from striprtf.striprtf import rtf_to_text
 from bs4 import BeautifulSoup
 import requests
 from newspaper import Article
-import nltk
 
-# Optional NLTK dependency: avoid network/download at import time.
-# We detect availability and proceed without downloading to keep startup fast.
-try:
-    nltk.data.find('tokenizers/punkt')
-    HAVE_PUNKT = True
-except Exception:
-    HAVE_PUNKT = False
+# Note: NLTK was previously imported to probe punkt availability, but is not used.
 
 
 # Module logger

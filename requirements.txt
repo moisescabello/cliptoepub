@@ -22,7 +22,7 @@ rumps                 # Menu bar interface
 pync                  # macOS notifications
 
 # Optional advanced features
-Pillow                # Image processing
+Pillow>=9.1           # Image processing (Resampling API)
 aiofiles              # Async file operations
 pytesseract           # OCR support
 

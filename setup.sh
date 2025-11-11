@@ -15,25 +15,25 @@ NC='\033[0m' # No Color
 # Functions
 print_header() {
     echo -e "${BLUE}=================================================${NC}"
-    echo -e "${BLUE}📋 Clipboard to ePub - Installation Script${NC}"
+    echo -e "${BLUE}Clipboard to ePub - Installation Script${NC}"
     echo -e "${BLUE}=================================================${NC}"
     echo ""
 }
 
 print_success() {
-    echo -e "${GREEN}✅ $1${NC}"
+    echo -e "${GREEN}[OK] $1${NC}"
 }
 
 print_error() {
-    echo -e "${RED}❌ $1${NC}"
+    echo -e "${RED}[ERROR] $1${NC}"
 }
 
 print_warning() {
-    echo -e "${YELLOW}⚠️  $1${NC}"
+    echo -e "${YELLOW}[WARN] $1${NC}"
 }
 
 print_info() {
-    echo -e "${BLUE}ℹ️  $1${NC}"
+    echo -e "${BLUE}[INFO] $1${NC}"
 }
 
 check_python() {
@@ -120,7 +120,7 @@ check_permissions() {
     if [[ ! $REPLY =~ ^[Yy]$ ]]; then
         print_warning "Please grant permissions before running the application"
     else
-        print_success "Permissions acknowledged"
+    print_success "Permissions acknowledged"
     fi
 }
 
@@ -163,14 +163,14 @@ try:
     import pyperclip
     import ebooklib
     import pynput
-    print('✅ All modules imported successfully')
+    print('[OK] All modules imported successfully')
 except ImportError as e:
-    print(f'❌ Import error: {e}')
+    print(f'[ERROR] Import error: {e}')
     sys.exit(1)
 "
 
     if [ $? -eq 0 ]; then
-        print_success "Installation test passed"
+    print_success "Installation test passed"
         return 0
     else
         print_error "Installation test failed"
@@ -181,10 +181,10 @@ except ImportError as e:
 print_instructions() {
     echo ""
     echo -e "${GREEN}=================================================${NC}"
-    echo -e "${GREEN}✅ Installation Complete!${NC}"
+    echo -e "${GREEN}[OK] Installation Complete!${NC}"
     echo -e "${GREEN}=================================================${NC}"
     echo ""
-    echo "📖 How to use:"
+    echo "How to use:"
     echo ""
     echo "  1. Start the application:"
     echo "     ${BLUE}./run.sh${NC}"
@@ -198,7 +198,7 @@ print_instructions() {
     echo ""
     echo "  5. Press ${BLUE}ESC${NC} to quit"
     echo ""
-    echo "📚 For more information, see README.md"
+    echo "For more information, see README.md"
     echo ""
 }
 

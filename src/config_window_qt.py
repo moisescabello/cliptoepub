@@ -77,9 +77,10 @@ except ImportError as e:
     HAVE_QT = False
 
 
+DEFAULT_HOTKEY = "ctrl+shift+e" if sys.platform.startswith("win") else "cmd+shift+e"
 DEFAULTS = {
     "output_directory": str(paths.get_default_output_dir()),
-    "hotkey": "cmd+shift+e",
+    "hotkey": DEFAULT_HOTKEY,
     "author": "Unknown Author",
     "language": "en",
     "style": "default",

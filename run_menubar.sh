@@ -10,12 +10,12 @@ BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
 echo -e "${BLUE}=================================================${NC}"
-echo -e "${BLUE}📋 Clipboard to ePub - Menu Bar Application${NC}"
+echo -e "${BLUE}Clipboard to ePub - Menu Bar Application${NC}"
 echo -e "${BLUE}=================================================${NC}"
 
 # Check if virtual environment exists
 if [ ! -d "venv" ]; then
-    echo -e "${RED}❌ Virtual environment not found!${NC}"
+    echo -e "${RED}[ERROR] Virtual environment not found!${NC}"
     echo "Please run ./setup.sh first to set up the environment"
     exit 1
 fi
@@ -40,14 +40,14 @@ if missing:
     sys.exit(1)
 PY
 if [ $? -ne 0 ]; then
-    echo -e "${BLUE}Instalando dependencias de la aplicación...${NC}"
+    echo -e "${BLUE}Installing application dependencies...${NC}"
     pip install -r requirements.txt
 fi
 
 # Create default configuration if it doesn't exist
 CONFIG_FILE="$HOME/Library/Preferences/clipboard-to-epub.json"
 if [ ! -f "$CONFIG_FILE" ]; then
-    echo -e "${BLUE}ℹ️  Creating default configuration...${NC}"
+    echo -e "${BLUE}[INFO] Creating default configuration...${NC}"
     mkdir -p "$HOME/Library/Preferences"
     cat > "$CONFIG_FILE" << EOL
 {
@@ -61,12 +61,12 @@ if [ ! -f "$CONFIG_FILE" ]; then
   "chapter_words": 5000
 }
 EOL
-    echo -e "${GREEN}✅ Configuration created at: $CONFIG_FILE${NC}"
+    echo -e "${GREEN}[OK] Configuration created at: $CONFIG_FILE${NC}"
 fi
 
 # Check accessibility permissions reminder
 echo ""
-echo -e "${BLUE}⚠️  IMPORTANT: Accessibility Permissions${NC}"
+echo -e "${BLUE}IMPORTANT: Accessibility Permissions${NC}"
 echo "The app needs accessibility permissions for global hotkeys to work."
 echo ""
 echo "To grant permissions:"
@@ -78,14 +78,14 @@ echo "Press Enter to continue..."
 read
 
 # Launch the menu bar application
-echo -e "${GREEN}🚀 Launching menu bar application...${NC}"
-echo -e "${BLUE}The app will appear in your menu bar as a 📋 icon${NC}"
+echo -e "${GREEN}Launching menu bar application...${NC}"
+echo -e "${BLUE}The app will appear in your menu bar as an icon${NC}"
 echo ""
 echo "Features:"
-echo "  • Click the icon to access the menu"
-echo "  • Use Cmd+Shift+E to convert clipboard content"
-echo "  • Recent conversions are available in the menu"
-echo "  • Settings can be configured from the menu"
+echo "  - Click the icon to access the menu"
+echo "  - Use Cmd+Shift+E to convert clipboard content"
+echo "  - Recent conversions are available in the menu"
+echo "  - Settings can be configured from the menu"
 echo ""
 echo "Press Ctrl+C to stop the application"
 echo -e "${BLUE}=================================================${NC}"
@@ -96,4 +96,4 @@ python src/menubar_app.py
 # Deactivate virtual environment when done
 deactivate
 
-echo -e "${GREEN}✅ Application stopped${NC}"
+echo -e "${GREEN}[OK] Application stopped${NC}"

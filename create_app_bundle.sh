@@ -13,7 +13,7 @@ BLUE='\033[0;34m'
 NC='\033[0m'
 
 echo -e "${BLUE}=================================================${NC}"
-echo -e "${BLUE}📋 Creating ClipToEpub App Bundle${NC}"
+echo -e "${BLUE}Creating ClipToEpub App Bundle${NC}"
 echo -e "${BLUE}=================================================${NC}"
 
 # App name and paths
@@ -41,7 +41,7 @@ cp content_processor.py "$RESOURCES_DIR/" 2>/dev/null || true
 # Copy icon
 if [ -f "resources/icon.icns" ]; then
     cp "resources/icon.icns" "$RESOURCES_DIR/app.icns"
-    echo -e "${GREEN}✅ Icon copied${NC}"
+    echo -e "${GREEN}[OK] Icon copied${NC}"
 fi
 
 # Create the main executable script
@@ -128,7 +128,7 @@ cat > "$CONTENTS_DIR/Info.plist" << 'EOF'
 </plist>
 EOF
 
-echo -e "${GREEN}✅ App bundle created successfully!${NC}"
+echo -e "${GREEN}[OK] App bundle created successfully!${NC}"
 echo
 echo "Application created: $APP_DIR"
 echo

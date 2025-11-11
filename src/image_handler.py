@@ -12,7 +12,6 @@ import logging
 from pathlib import Path
 from typing import Optional, Dict, Tuple, Any
 from PIL import Image, ImageOps
-import pyperclip
 import pytesseract
 from datetime import datetime
 
@@ -74,23 +73,39 @@ class ImageHandler:
             )
 
             if 'TIFF' in result.stdout or 'PNG' in result.stdout:
-                # Save clipboard image to temp file
-                with tempfile.NamedTemporaryFile(suffix='.png', delete=False) as tmp:
-                    # Use screencapture to save clipboard to file
+                tmp_path = None
+                try:
+                    # Save clipboard image to temp file
+                    with tempfile.NamedTemporaryFile(suffix='.png', delete=False) as tmp:
+                        tmp_path = tmp.name
+
+                    # Try to coerce clipboard to PNG to improve compatibility
                     subprocess.run(
                         ['osascript', '-e',
-                         f'set the clipboard to (read (the clipboard as «class PNGf») as «class PNGf»)'],
+                         'set the clipboard to (read (the clipboard as «class PNGf») as «class PNGf»)'],
                         capture_output=True
                     )
 
-                    # Alternative: try using pngpaste if available
+                    # Try using pngpaste if available
                     try:
-                        subprocess.run(['pngpaste', tmp.name], check=True)
-                        image = Image.open(tmp.name)
-                        os.unlink(tmp.name)
+                        subprocess.run(['pngpaste', tmp_path], check=True)
+                        # Fully load image into memory so temp file can be removed
+                        with Image.open(tmp_path) as img:
+                            img.load()
+                            image = img.copy()
+                        os.unlink(tmp_path)
+                        tmp_path = None
                         return image
                     except (subprocess.CalledProcessError, FileNotFoundError):
+                        # pngpaste not available; fall through
                         pass
+                finally:
+                    # Ensure temp file is removed on any failure path
+                    if tmp_path and os.path.exists(tmp_path):
+                        try:
+                            os.unlink(tmp_path)
+                        except OSError:
+                            pass
 
             return None
 
@@ -121,7 +136,12 @@ class ImageHandler:
 
             # Resize if necessary
             if self.optimize_images:
-                image.thumbnail((self.MAX_WIDTH, self.MAX_HEIGHT), Image.Resampling.LANCZOS)
+                # Pillow < 9.1 does not have Image.Resampling; fall back to LANCZOS/ANTIALIAS
+                try:
+                    resample_filter = Image.Resampling.LANCZOS  # type: ignore[attr-defined]
+                except AttributeError:
+                    resample_filter = getattr(Image, "LANCZOS", getattr(Image, "ANTIALIAS", Image.BICUBIC))
+                image.thumbnail((self.MAX_WIDTH, self.MAX_HEIGHT), resample_filter)
 
             # Auto-orient based on EXIF data
             image = ImageOps.exif_transpose(image)

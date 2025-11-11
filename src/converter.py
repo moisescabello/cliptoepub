@@ -284,15 +284,7 @@ class ClipboardToEpubConverter:
                 logger.warning("No content to convert")
                 return None
 
-            # Cache check
-            if self.cache:
-                cache_key = {"css_template": self.default_style, "words_per_chapter": self.chapter_words}
-                cached = self.cache.get(content, cache_key)
-                if cached:
-                    logger.info("Using cached conversion result")
-                    return await self._create_epub_from_cached_async(cached)
-
-            # Optional edit window
+            # Optional edit window first so user changes affect processing and caching
             if self.enable_edit_window and not use_accumulator:
                 edited_content, edited_meta = await self._show_edit_window_async(content, metadata)
                 if edited_content:
@@ -302,8 +294,24 @@ class ClipboardToEpubConverter:
                     logger.info("User cancelled conversion")
                     return None
 
+            # Build processing options possibly overridden by metadata (from accumulator or editor)
+            words_per_chapter = self.chapter_words
+            if "chapter_words" in metadata:
+                try:
+                    words_per_chapter = int(metadata.get("chapter_words"))  # type: ignore[arg-type]
+                except Exception:
+                    words_per_chapter = self.chapter_words
+            css_template = str(metadata.get("style", self.default_style))
+            options = {"words_per_chapter": words_per_chapter, "css_template": css_template}
+
+            # Cache check (after potential edits so we don't skip user's changes)
+            if self.cache:
+                cached = self.cache.get(content, options)
+                if cached:
+                    logger.info("Using cached conversion result")
+                    return await self._create_epub_from_cached_async(cached)
+
             # Process content (thread pool)
-            options = {"words_per_chapter": self.chapter_words, "css_template": self.default_style}
             loop = asyncio.get_running_loop()
             processed = await loop.run_in_executor(self.executor, process_clipboard_content, content, options)
 
@@ -401,6 +409,7 @@ class ClipboardToEpubConverter:
             proc_metadata = cached.get("metadata", {})
             css_style = cached.get("css", "")
             format_type = cached.get("format", "plain")
+            toc_html = cached.get("toc_html")
 
             if not chapters:
                 logger.warning("Cached data has no chapters")
@@ -430,6 +439,25 @@ class ClipboardToEpubConverter:
             book.add_item(css_item)
 
             epub_chapters = []
+
+            # Optional static TOC page if provided in cached data
+            if toc_html:
+                toc_page = epub.EpubHtml(uid="toc", file_name="toc.xhtml", title="Table of Contents")
+                page_content = toc_html.strip()
+                if not (page_content.lower().startswith("<!doctype") or page_content.lower().startswith("<html")):
+                    page_content = f"""<!DOCTYPE html>
+<html xmlns=\"http://www.w3.org/1999/xhtml\">
+<head>
+    <title>Table of Contents</title>
+    <link rel=\"stylesheet\" type=\"text/css\" href=\"style.css\"/>
+</head>
+<body>
+    {page_content}
+</body>
+</html>"""
+                toc_page.content = page_content
+                book.add_item(toc_page)
+                epub_chapters.append(toc_page)
             for idx, chapter in enumerate(chapters, 1):
                 html = epub.EpubHtml(uid=f"chapter_{idx}", file_name=f"chapter_{idx}.xhtml", title=chapter["title"])
                 chapter_content = chapter["content"]
@@ -474,6 +502,7 @@ class ClipboardToEpubConverter:
             proc_metadata = processed.get("metadata", {})
             css_style = processed.get("css", "")
             format_type = processed.get("format", "plain")
+            toc_html = processed.get("toc_html")
 
             if not chapters:
                 logger.warning("No chapters to convert")
@@ -502,6 +531,25 @@ class ClipboardToEpubConverter:
             book.add_item(css_item)
 
             epub_chapters = []
+
+            # Optional static TOC page if provided by processor
+            if toc_html:
+                toc_page = epub.EpubHtml(uid="toc", file_name="toc.xhtml", title="Table of Contents")
+                page_content = toc_html.strip()
+                if not (page_content.lower().startswith("<!doctype") or page_content.lower().startswith("<html")):
+                    page_content = f"""<!DOCTYPE html>
+<html xmlns=\"http://www.w3.org/1999/xhtml\">
+<head>
+    <title>Table of Contents</title>
+    <link rel=\"stylesheet\" type=\"text/css\" href=\"style.css\"/>
+</head>
+<body>
+    {page_content}
+</body>
+</html>"""
+                toc_page.content = page_content
+                book.add_item(toc_page)
+                epub_chapters.append(toc_page)
             for idx, chapter in enumerate(chapters, 1):
                 html = epub.EpubHtml(uid=f"chapter_{idx}", file_name=f"chapter_{idx}.xhtml", title=chapter["title"])
                 chapter_content = chapter["content"]

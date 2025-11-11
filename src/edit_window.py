@@ -7,6 +7,7 @@ Provides a GUI for editing and previewing content before conversion
 import tkinter as tk
 from tkinter import ttk, scrolledtext, messagebox
 import logging
+import sys
 from typing import Optional, Dict, Any, Callable
 from pathlib import Path
 import json
@@ -261,8 +262,9 @@ class PreConversionEditor:
         button_frame = ttk.Frame(parent)
         button_frame.grid(row=3, column=0, sticky=(tk.W, tk.E), pady=(10, 0))
 
-        # Left side - info
-        info_label = ttk.Label(button_frame, text="Press Cmd+Enter to convert, Esc to cancel")
+        # Left side - info (platform-aware)
+        shortcut_convert = "Cmd+Enter" if sys.platform == "darwin" else "Ctrl+Enter"
+        info_label = ttk.Label(button_frame, text=f"Press {shortcut_convert} to convert, Esc to cancel")
         info_label.pack(side=tk.LEFT)
 
         # Right side - buttons
@@ -272,12 +274,15 @@ class PreConversionEditor:
 
     def setup_shortcuts(self):
         """Set up keyboard shortcuts"""
-        # Convert: Cmd+Enter
-        self.window.bind('<Command-Return>', lambda e: self.convert())
+        # Convert / Preview shortcuts (platform-aware)
+        if sys.platform == 'darwin':
+            self.window.bind('<Command-Return>', lambda e: self.convert())
+            self.window.bind('<Command-p>', lambda e: self.generate_preview())
+        else:
+            self.window.bind('<Control-Return>', lambda e: self.convert())
+            self.window.bind('<Control-p>', lambda e: self.generate_preview())
         # Cancel: Escape
         self.window.bind('<Escape>', lambda e: self.cancel())
-        # Generate preview: Cmd+P
-        self.window.bind('<Command-p>', lambda e: self.generate_preview())
 
     def load_content(self):
         """Load initial content into editor"""

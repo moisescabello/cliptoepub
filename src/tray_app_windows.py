@@ -36,7 +36,10 @@ try:
     from src import paths as paths  # type: ignore
 except Exception:
     import paths  # type: ignore
-from converter import ClipboardToEpubConverter
+try:
+    from src.converter import ClipboardToEpubConverter  # type: ignore
+except Exception:
+    from converter import ClipboardToEpubConverter  # type: ignore
 
 
 DEFAULT_CONFIG = {

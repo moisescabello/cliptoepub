@@ -15,23 +15,23 @@ NC='\033[0m' # No Color
 
 # Function to print colored output
 print_status() {
-    echo -e "${BLUE}ℹ️  $1${NC}"
+    echo -e "${BLUE}[INFO] $1${NC}"
 }
 
 print_success() {
-    echo -e "${GREEN}✅ $1${NC}"
+    echo -e "${GREEN}[OK] $1${NC}"
 }
 
 print_error() {
-    echo -e "${RED}❌ $1${NC}"
+    echo -e "${RED}[ERROR] $1${NC}"
 }
 
 print_warning() {
-    echo -e "${YELLOW}⚠️  $1${NC}"
+    echo -e "${YELLOW}[WARN] $1${NC}"
 }
 
 echo -e "${BLUE}=================================================${NC}"
-echo -e "${BLUE}📋 Clipboard to ePub - Fixed Build Application${NC}"
+echo -e "${BLUE}Clipboard to ePub - Fixed Build Application${NC}"
 echo -e "${BLUE}=================================================${NC}"
 echo
 
@@ -54,17 +54,17 @@ fi
 # Install py2app
 print_status "Installing py2app..."
 pip install --quiet --upgrade py2app
-print_success "py2app installed"
+    print_success "py2app installed"
 
 # Install beautifulsoup4 correctly
 print_status "Installing beautifulsoup4 (imports as bs4)..."
 pip install --quiet --upgrade beautifulsoup4
-print_success "beautifulsoup4 installed"
+    print_success "beautifulsoup4 installed"
 
 # Install newspaper3k correctly
 print_status "Installing newspaper3k (imports as newspaper)..."
 pip install --quiet --upgrade newspaper3k
-print_success "newspaper3k installed"
+    print_success "newspaper3k installed"
 
 # Install other missing packages
 print_status "Installing other required packages..."
@@ -77,7 +77,7 @@ pip install --quiet --upgrade \
     aiofiles \
     pytesseract \
     nltk
-print_success "All requirements installed"
+    print_success "All requirements installed"
 
 # Download NLTK data
 print_status "Downloading NLTK data..."
@@ -89,7 +89,7 @@ print_status "Cleaning previous builds..."
 rm -rf build dist
 rm -rf *.egg-info
 rm -rf __pycache__ */__pycache__ */*/__pycache__
-print_success "Previous builds cleaned"
+    print_success "Previous builds cleaned"
 
 # Build the application with py2app
 print_status "Building application with py2app..."
@@ -122,7 +122,7 @@ else
 
     # Sometimes py2app creates with different name
     if ls dist/*.app 2>/dev/null; then
-        print_status "Found app bundles in dist:"
+    print_status "Found app bundles in dist:"
         ls -la dist/*.app
     fi
 fi
@@ -155,7 +155,7 @@ print_success "Created launcher: launch_app.command"
 
 echo
 echo -e "${BLUE}=================================================${NC}"
-echo -e "${GREEN}✅ Build script completed!${NC}"
+echo -e "${GREEN}[OK] Build script completed!${NC}"
 echo -e "${BLUE}=================================================${NC}"
 echo
 echo "Next steps:"

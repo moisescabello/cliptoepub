@@ -236,8 +236,9 @@ class UpdateChecker:
 
             logger.info(f"Downloading update from {download_url}")
 
-            response = requests.get(download_url, stream=True)
-            total_size = int(response.headers.get('content-length', 0))
+            response = requests.get(download_url, stream=True, timeout=20)
+            response.raise_for_status()
+            total_size = int(response.headers.get('content-length', 0) or 0)
 
             downloaded = 0
             with open(download_path, 'wb') as f:

@@ -24,9 +24,10 @@ class ConfigWindow:
         self.config_path = config_path or paths.get_config_path()
 
         # Default configuration
+        default_hotkey = "ctrl+shift+e" if sys.platform.startswith("win") else "cmd+shift+e"
         self.default_config = {
             "output_directory": str(paths.get_default_output_dir()),
-            "hotkey": "cmd+shift+e",
+            "hotkey": default_hotkey,
             "author": "Unknown Author",
             "language": "en",
             "style": "default",

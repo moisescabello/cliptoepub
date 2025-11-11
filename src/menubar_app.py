@@ -214,6 +214,9 @@ class ClipToEpubApp(rumps.App):
                         recent_menu.add(item)
                 else:
                     recent_menu.add(rumps.MenuItem("No recent conversions", callback=None))
+            else:
+                # If the output directory doesn't exist yet, show a helpful placeholder
+                recent_menu.add(rumps.MenuItem("No recent conversions", callback=None))
 
     def convert_now(self, sender=None):
         """Manually trigger conversion"""
@@ -430,13 +433,17 @@ class ClipToEpubApp(rumps.App):
 
 
 if __name__ == "__main__":
-    # Check if running in virtual environment
-    if not hasattr(sys, 'real_prefix') and not (hasattr(sys, 'base_prefix') and sys.base_prefix != sys.prefix):
-        print("Warning: Not running in virtual environment")
-        print("Please activate the virtual environment first:")
-        print("  source venv/bin/activate")
-        sys.exit(1)
+    # In development we prefer a venv, but don't hard-exit for bundled apps
+    is_venv = (
+        hasattr(sys, 'real_prefix') or
+        (hasattr(sys, 'base_prefix') and sys.base_prefix != sys.prefix)
+    )
+    is_frozen = bool(getattr(sys, 'frozen', False))
+    if not is_venv and not is_frozen:
+        print("Warning: Not running in a virtual environment.")
+        print("It's recommended to: source venv/bin/activate")
+        # Continue without exiting to support non-venv runs
 
     # Create and run the app
-    app = ClipboardToEpubApp()
+    app = ClipToEpubApp()
     app.run()
