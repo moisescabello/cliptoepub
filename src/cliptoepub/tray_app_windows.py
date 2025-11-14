@@ -432,24 +432,10 @@ class WindowsTrayApp:
         if not self.converter:
             return
         try:
-            # If clipboard contains a YouTube URL, delegate to converter's pipeline
-            def _looks_like_youtube_url(text: str) -> bool:
-                try:
-                    from urllib.parse import urlparse
-                    t = (text or "").strip()
-                    if not t or "\n" in t:
-                        return False
-                    u = urlparse(t)
-                    if u.scheme not in ("http", "https"):
-                        return False
-                    host = (u.netloc or "").lower()
-                    return ("youtube.com" in host) or ("youtu.be" in host)
-                except Exception:
-                    return False
-
             import pyperclip
             clip_text = pyperclip.paste() or ""
-            if clip_text and _looks_like_youtube_url(str(clip_text)):
+            # If clipboard contains a YouTube URL, delegate to converter's pipeline
+            if clip_text and ClipboardToEpubConverter._looks_like_youtube_url(str(clip_text)):
                 captured_url = str(clip_text)
                 def run_youtube():
                     try:

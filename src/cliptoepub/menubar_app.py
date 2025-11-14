@@ -323,23 +323,8 @@ class ClipToEpubApp(rumps.App):
             self.notify("Conversion Error", str(e))
 
     def convert_with_llm(self, sender=None, prompt_index=None):
-        """Send clipboard text through Anthropic and convert returned Markdown to ePub."""
+        """Send clipboard text through LLM and convert returned Markdown to ePub."""
         try:
-            # If clipboard is a YouTube URL, delegate to converter's YouTube flow
-            def _looks_like_youtube_url(text: str) -> bool:
-                try:
-                    from urllib.parse import urlparse
-                    t = (text or "").strip()
-                    if not t or "\n" in t:
-                        return False
-                    u = urlparse(t)
-                    if u.scheme not in ("http", "https"):
-                        return False
-                    host = (u.netloc or "").lower()
-                    return ("youtube.com" in host) or ("youtu.be" in host)
-                except Exception:
-                    return False
-
             try:
                 import pyperclip
                 clip_text = pyperclip.paste()
@@ -347,7 +332,8 @@ class ClipToEpubApp(rumps.App):
                 clip_text = ""
                 print(f"Clipboard error: {e}")
 
-            if clip_text and _looks_like_youtube_url(str(clip_text)):
+            # If clipboard is a YouTube URL, delegate to converter's YouTube flow
+            if clip_text and ClipboardToEpubConverter._looks_like_youtube_url(str(clip_text)):
                 # Run via converter to reuse yt-dlp + LLM pipeline, passing the captured URL
                 captured_url = str(clip_text)
 

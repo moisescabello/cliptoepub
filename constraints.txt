@@ -12,27 +12,26 @@ python-dateutil==2.8.2
 black==23.11.0
 flake8==6.1.0
 
-# Content and parsing libraries constrained to their tested major versions
-markdown2<3.0.0
-striprtf<0.1.0
-beautifulsoup4<5.0.0
-requests<3.0.0
-newspaper3k<0.3.0
-nltk<4.0.0
-chardet<6.0.0
-lxml_html_clean<2.0.0
+# Content and parsing libraries pinned to tested versions
+markdown2==2.5.4
+striprtf==0.0.29
+beautifulsoup4==4.14.2
+requests==2.32.5
+newspaper3k==0.2.8
+nltk==3.9.2
+chardet==5.2.0
+lxml_html_clean==0.4.3
 
 # Platform/UI helpers
-rumps<1.0.0
-pync<3.0.0
-PySide6<7.0.0
+rumps==0.4.0
+pync==2.0.3
+PySide6==6.10.0
 
 # Media, async and OCR
-Pillow<11.0.0
-aiofiles<24.0.0
-pytesseract<1.0.0
+Pillow==11.3.0
+aiofiles==25.1.0
+pytesseract==0.3.13
 
 # LLM and HTTP clients
-anthropic<1.0.0
-httpx<1.0.0
-
+anthropic==0.72.1
+httpx==0.28.1

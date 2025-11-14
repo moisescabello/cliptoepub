@@ -549,14 +549,22 @@ class ClipboardToEpubConverter:
     # --------- YouTube subtitles + LLM helpers ---------
     @staticmethod
     def _looks_like_youtube_url(text: str) -> bool:
+        """Return True if the given text looks like a YouTube URL.
+
+        Centralized helper used by converter and UI frontends to avoid
+        duplicated host/scheme checks.
+        """
         try:
-            from urllib.parse import urlparse, parse_qs
-            u = urlparse(text.strip())
+            from urllib.parse import urlparse
+
+            t = (text or "").strip()
+            if not t or "\n" in t:
+                return False
+            u = urlparse(t)
             if u.scheme not in {"http", "https"}:
                 return False
             host = (u.netloc or "").lower()
             if any(h in host for h in ["youtube.com", "youtu.be"]):
-                # quick sanity: if youtube.com check for /watch or shorts/live; youtu.be path holds id
                 return True
             return False
         except Exception:
@@ -857,7 +865,7 @@ class ClipboardToEpubConverter:
         else:
             provider = AnthropicProvider()
             api_key = (self.anthropic_api_key or "").strip() or os.environ.get("ANTHROPIC_API_KEY", "")
-            # Accept both Anthropic id and OpenRouter id; AnthropicProvider/process_text handles mapping
+            # Use Anthropic-native model ids for this provider
             model = self.anthropic_model or "claude-4.5-sonnet"
         ov = llm_overrides or {}
         sys_prompt = str(ov.get("system_prompt", self.anthropic_prompt or ""))

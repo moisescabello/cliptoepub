@@ -94,6 +94,8 @@ class ConfigWindow:
     def save_config(self):
         """Save configuration to file"""
         try:
+            warnings = []
+
             # Update config from GUI elements
             self.config["output_directory"] = self.output_var.get()
             # Normalize hotkey string
@@ -130,27 +132,40 @@ class ConfigWindow:
                     model = self.llm_over_model_vars[i].get().strip()
                     if model:
                         overrides["model"] = model
-                    try:
-                        overrides["max_tokens"] = int(self.llm_over_maxtok_vars[i].get())
-                    except Exception:
-                        pass
-                    try:
-                        overrides["temperature"] = float(self.llm_over_temp_vars[i].get())
-                    except Exception:
-                        pass
-                    try:
-                        overrides["timeout_seconds"] = int(self.llm_over_timeout_vars[i].get())
-                    except Exception:
-                        pass
-                    try:
-                        overrides["retry_count"] = int(self.llm_over_retry_vars[i].get())
-                    except Exception:
-                        pass
+                    prompt_label = name or f"Prompt {i + 1}"
+
+                    raw_max = self.llm_over_maxtok_vars[i].get().strip()
+                    if raw_max:
+                        try:
+                            overrides["max_tokens"] = int(raw_max)
+                        except ValueError:
+                            warnings.append(f"{prompt_label}: max_tokens override is not a valid integer; value ignored.")
+
+                    raw_temp = self.llm_over_temp_vars[i].get().strip()
+                    if raw_temp:
+                        try:
+                            overrides["temperature"] = float(raw_temp)
+                        except ValueError:
+                            warnings.append(f"{prompt_label}: temperature override is not a valid number; value ignored.")
+
+                    raw_timeout = self.llm_over_timeout_vars[i].get().strip()
+                    if raw_timeout:
+                        try:
+                            overrides["timeout_seconds"] = int(raw_timeout)
+                        except ValueError:
+                            warnings.append(f"{prompt_label}: timeout_seconds override is not a valid integer; value ignored.")
+
+                    raw_retry = self.llm_over_retry_vars[i].get().strip()
+                    if raw_retry:
+                        try:
+                            overrides["retry_count"] = int(raw_retry)
+                        except ValueError:
+                            warnings.append(f"{prompt_label}: retry_count override is not a valid integer; value ignored.")
+
                 prompts.append({"name": name, "text": text, "overrides": overrides})
             self.config["llm_prompts"] = prompts
             self.config["llm_prompt_active"] = int(self.llm_active_var.get())
             self.config["llm_per_prompt_overrides"] = bool(self.llm_overrides_var.get())
-            # Legacy single prompt sync (centralized)
             sync_legacy_prompt(self.config)
             try:
                 self.config["anthropic_max_tokens"] = int(self.anthropic_max_tokens_var.get())
@@ -191,13 +206,12 @@ class ConfigWindow:
             # YouTube settings
             def _to_code(val: str, default: str) -> str:
                 s = (val or "").strip()
-                # Expect pattern like 'en – English'
                 if "–" in s:
                     s = s.split("–", 1)[0].strip()
                 elif "-" in s:
-                    # Fallback if hyphen used by some themes/fonts
                     s = s.split("-", 1)[0].strip()
                 return s or default
+
             self.config["youtube_lang_1"] = _to_code(self.yt_lang1_var.get(), "en")
             self.config["youtube_lang_2"] = _to_code(self.yt_lang2_var.get(), "es")
             self.config["youtube_lang_3"] = _to_code(self.yt_lang3_var.get(), "pt")
@@ -211,7 +225,6 @@ class ConfigWindow:
                 json.dump(self.config, f, indent=2)
 
             # Surface non-blocking warnings relevant to runtime behavior
-            warnings = []
             try:
                 provider = (self.config.get("llm_provider", "openrouter") or "").strip().lower()
                 if provider == "anthropic":
@@ -238,7 +251,7 @@ class ConfigWindow:
                 except Exception:
                     pass
 
-            messagebox.showinfo("Success", "Configuration saved successfully!\n\nRestart the menu bar app to apply changes.")
+            messagebox.showinfo("Success", "Configuration saved successfully.")
             return True
 
         except Exception as e:
@@ -621,25 +634,39 @@ class ConfigWindow:
 
         def _test_llm():
             try:
-                try:
-                    from .llm_anthropic import process_text  # type: ignore
-                except Exception:
-                    from .llm_anthropic import process_text  # type: ignore
+                from .llm.base import LLMRequest
+                from .llm.anthropic import AnthropicProvider
+                from .llm.openrouter import OpenRouterProvider
+
                 provider = (self.llm_provider_var.get() or "anthropic").strip().lower()
                 if provider == "openrouter":
                     api_key = self.openrouter_api_key_var.get().strip() or os.environ.get("OPENROUTER_API_KEY", "")
                     model = self.anthropic_model_var.get().strip() or "anthropic/claude-sonnet-4.5"
+                    llm_provider = OpenRouterProvider()
                 else:
                     api_key = self.anthropic_api_key_var.get().strip() or os.environ.get("ANTHROPIC_API_KEY", "")
                     model = self.anthropic_model_var.get().strip() or self.default_config["anthropic_model"]
+                    llm_provider = AnthropicProvider()
+
                 # Use active prompt text
                 idx = int(self.llm_active_var.get() or 0)
                 if 0 <= idx < len(self.llm_text_widgets):
                     prompt = self.llm_text_widgets[idx].get("1.0", tk.END).strip() or "Return the input as Markdown."
                 else:
                     prompt = "Return the input as Markdown."
+
                 sample = "Test message from Clipboard to ePub"
-                md = process_text(sample, api_key=api_key, model=model, system_prompt=prompt, max_tokens=128, temperature=0.0, timeout_s=30, retries=2)
+                request = LLMRequest(
+                    text=sample,
+                    api_key=api_key,
+                    model=model,
+                    system_prompt=prompt,
+                    max_tokens=128,
+                    temperature=0.0,
+                    timeout_s=30,
+                    retries=2,
+                )
+                md = llm_provider.process(request)
                 preview = "\n".join((md or "").strip().splitlines()[0:3])
                 messagebox.showinfo("LLM OK", preview or "Received response")
             except Exception as e:

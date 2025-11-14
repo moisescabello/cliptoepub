@@ -51,15 +51,25 @@ class ImageHandler:
 
     def detect_image_in_clipboard(self) -> Optional[Image.Image]:
         """
-        Detect if clipboard contains an image
+        Detect if clipboard contains an image.
+
+        On macOS and Windows, this now prefers Pillow's ImageGrab backend
+        and falls back to platform-specific helpers when needed. Other
+        platforms currently do not support image clipboard capture.
 
         Returns:
             PIL Image object if clipboard contains image, None otherwise
         """
         try:
             if sys.platform == "darwin":
+                # Prefer a high-level backend first; fall back to AppleScript/pngpaste
+                image = self._detect_image_via_imagegrab()
+                if image is not None:
+                    return image
                 return self._detect_image_macos_clipboard()
+
             if sys.platform.startswith("win"):
+                # Use ImageGrab backend on Windows
                 return self._detect_image_windows_clipboard()
 
             # For other platforms, we currently do not support image clipboard capture
@@ -68,6 +78,42 @@ class ImageHandler:
         except Exception as e:
             logger.debug(f"No image detected in clipboard: {e}", exc_info=True)
             return None
+
+    def _detect_image_via_imagegrab(self) -> Optional[Image.Image]:
+        """
+        Cross-platform clipboard image detection using Pillow's ImageGrab
+        where available.
+        """
+        try:
+            from PIL import ImageGrab  # type: ignore
+        except Exception as e:
+            logger.debug(f"ImageGrab not available for clipboard detection: {e}")
+            return None
+
+        try:
+            data = ImageGrab.grabclipboard()
+        except Exception as e:
+            logger.debug(f"ImageGrab.grabclipboard() failed: {e}")
+            return None
+
+        if isinstance(data, Image.Image):
+            return data
+
+        # Sometimes the clipboard contains file paths instead of a raw image
+        if isinstance(data, list):
+            for item in data:
+                if isinstance(item, str) and os.path.isfile(item):
+                    suffix = Path(item).suffix.lower()
+                    if suffix in self.SUPPORTED_FORMATS:
+                        try:
+                            with Image.open(item) as img:
+                                img.load()
+                                return img.copy()
+                        except Exception as e:
+                            logger.debug(f"Failed to open image file from clipboard list '{item}': {e}")
+
+        logger.debug("No image data found in clipboard via ImageGrab")
+        return None
 
     def _detect_image_macos_clipboard(self) -> Optional[Image.Image]:
         """
@@ -144,37 +190,10 @@ class ImageHandler:
     def _detect_image_windows_clipboard(self) -> Optional[Image.Image]:
         """
         Windows-specific clipboard image detection using Pillow's ImageGrab.
+
+        Delegates to the shared ImageGrab-based helper.
         """
-        try:
-            from PIL import ImageGrab  # type: ignore
-        except Exception as e:
-            logger.debug(f"ImageGrab not available for Windows clipboard detection: {e}")
-            return None
-
-        try:
-            data = ImageGrab.grabclipboard()
-        except Exception as e:
-            logger.debug(f"ImageGrab.grabclipboard() failed: {e}")
-            return None
-
-        if isinstance(data, Image.Image):
-            return data
-
-        # Sometimes the clipboard contains file paths instead of a raw image
-        if isinstance(data, list):
-            for item in data:
-                if isinstance(item, str) and os.path.isfile(item):
-                    suffix = Path(item).suffix.lower()
-                    if suffix in self.SUPPORTED_FORMATS:
-                        try:
-                            with Image.open(item) as img:
-                                img.load()
-                                return img.copy()
-                        except Exception as e:
-                            logger.debug(f"Failed to open image file from clipboard list '{item}': {e}")
-
-        logger.debug("No image data found in Windows clipboard")
-        return None
+        return self._detect_image_via_imagegrab()
 
     def optimize_image(self, image: Image.Image, format: str = 'JPEG') -> Tuple[bytes, str]:
         """

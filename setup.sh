@@ -81,8 +81,8 @@ install_dependencies() {
     # Upgrade pip first
     pip install --upgrade pip > /dev/null 2>&1
 
-    # Install requirements
-    pip install -r requirements.txt
+    # Install requirements with constraints for reproducible versions
+    pip install -r requirements.txt -c constraints.txt
 
     print_success "Dependencies installed"
 }

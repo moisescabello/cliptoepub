@@ -183,24 +183,6 @@ def process_text(
     if not model or not system_prompt:
         raise AnthropicAuthOrConfigError("Missing model or system prompt")
 
-    # Route to OpenRouter if model looks like an OpenRouter id or if the requested
-    # Anthropic-id is known to be provided via OpenRouter (e.g., Sonnet 4.5, 1M context)
-    model_lc = (model or "").strip().lower()
-    if "/" in model_lc or model_lc in {"claude-4.5-sonnet", "sonnet-4.5", "claude-sonnet-4.5"}:
-        # Normalize popular alias to OpenRouter's canonical id when needed
-        if model_lc in {"claude-4.5-sonnet", "sonnet-4.5", "claude-sonnet-4.5"}:
-            model = "anthropic/claude-sonnet-4.5"
-        return _process_via_openrouter(
-            text,
-            api_key=api_key,  # May be empty; OPENROUTER_API_KEY is read inside
-            model=model,
-            system_prompt=system_prompt,
-            max_tokens=max_tokens,
-            temperature=temperature,
-            timeout_s=timeout_s,
-            retries=retries,
-        )
-
     if not api_key:
         raise AnthropicAuthOrConfigError("Missing Anthropic API key")
 
@@ -293,4 +275,3 @@ def sanitize_first_line(text: str) -> str:
         return "Untitled"
     title = first[0].strip("# -* ")[:120]
     return title or "Untitled"
-

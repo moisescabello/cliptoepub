@@ -657,17 +657,20 @@ if HAVE_QT:
             test_btn = QPushButton("Test Connection")
             def _test():
                 try:
-                    try:
-                        from .llm_anthropic import process_text  # type: ignore
-                    except Exception:
-                        from .llm_anthropic import process_text  # type: ignore
-                    provider = str(self.provider_combo.currentData() or "anthropic")
+                    from .llm.base import LLMRequest
+                    from .llm.anthropic import AnthropicProvider
+                    from .llm.openrouter import OpenRouterProvider
+
+                    provider = str(self.provider_combo.currentData() or "anthropic").strip().lower()
                     if provider == "openrouter":
                         api_key = self.openrouter_key_edit.text().strip() or os.environ.get("OPENROUTER_API_KEY", "")
                         model = self.anthropic_model_edit.text().strip() or "anthropic/claude-sonnet-4.5"
+                        llm_provider = OpenRouterProvider()
                     else:
                         api_key = self.anthropic_key_edit.text().strip() or os.environ.get("ANTHROPIC_API_KEY", "")
                         model = self.anthropic_model_edit.text().strip() or DEFAULTS["anthropic_model"]
+                        llm_provider = AnthropicProvider()
+
                     # Use active prompt text for test
                     active = 0
                     try:
@@ -682,8 +685,19 @@ if HAVE_QT:
                         prompt = self.prompt_widgets[active]["text"].toPlainText().strip() or "Return the input as Markdown."
                     else:
                         prompt = "Return the input as Markdown."
+
                     sample = "Test message from Clipboard to ePub"
-                    md = process_text(sample, api_key=api_key, model=model, system_prompt=prompt, max_tokens=128, temperature=0.0, timeout_s=30, retries=2)
+                    request = LLMRequest(
+                        text=sample,
+                        api_key=api_key,
+                        model=model,
+                        system_prompt=prompt,
+                        max_tokens=128,
+                        temperature=0.0,
+                        timeout_s=30,
+                        retries=2,
+                    )
+                    md = llm_provider.process(request)
                     preview = (md or "").strip().splitlines()[0:3]
                     QMessageBox.information(self, "LLM OK", "\n".join(preview) or "Received response")
                 except Exception as e:
@@ -828,7 +842,7 @@ if HAVE_QT:
 
             ok = save_config(cfg)
             if ok:
-                QMessageBox.information(self, "Settings Saved", "Configuration saved successfully!\n\nRestart the menu bar app to apply changes.")
+                QMessageBox.information(self, "Settings Saved", "Configuration saved successfully.")
                 self.accept()
             else:
                 QMessageBox.critical(self, "Error", "Failed to save configuration.")
