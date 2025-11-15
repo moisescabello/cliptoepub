@@ -4,11 +4,10 @@ One simple step: press a global hotkey and it automatically converts the clipboa
 
 One more thing! If the clipboard content is just a a YouTube video URL, it will download the subtitles, process them with the LLM, and convert them to ePub.
 
-<img src="https://github.com/user-attachments/assets/d1bdb063-5ecf-42f8-9fb5-6383f0a65f10" width="200"/>   
-<img src="https://github.com/user-attachments/assets/8c07f964-c341-425c-bc3b-8b5b470c074c" width="400"/>
-<img src="https://github.com/user-attachments/assets/7bb425e2-c124-4104-aae2-5ba3f45d9e06" width="400"/>
-
-
+<img src="https://github.com/user-attachments/assets/110bd335-ce09-4f62-88bb-3b983eebfb3d" width="200"/>
+<img src="https://github.com/user-attachments/assets/693ac407-e29b-44b9-9620-3337876027fb" width="400"/>
+<br>
+<img src="https://github.com/user-attachments/assets/fa5fce91-19d5-4ca7-a4fc-00e07bad3849" width="400"/>
 
 ## Prerequisites
 
