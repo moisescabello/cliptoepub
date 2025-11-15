@@ -270,5 +270,5 @@ For issues or questions:
 
 ---
 
-**Current Version:** 1.0.0 (Menubar + Windows Tray)
+**Current Version:** 1.2.5 (Menubar + Windows Tray)
 **Last Updated:** November 2025
