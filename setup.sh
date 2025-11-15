@@ -84,6 +84,9 @@ install_dependencies() {
     # Install requirements with constraints for reproducible versions
     pip install -r requirements.txt -c constraints.txt
 
+    # Install the local package in editable mode so 'cliptoepub' is importable
+    pip install -e .
+
     print_success "Dependencies installed"
 }
 

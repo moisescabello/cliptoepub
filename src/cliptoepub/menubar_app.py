@@ -31,6 +31,21 @@ from .llm_config import (
 from .errors import ErrorEvent
 
 
+def _warm_mac_keyboard_apis():
+    if sys.platform != "darwin":
+        return
+    try:
+        import HIServices
+        _ = HIServices.AXIsProcessTrusted
+    except Exception:
+        pass
+    try:
+        import Quartz
+        _ = Quartz.CFRunLoopAddSource
+    except Exception:
+        pass
+
+
 class ClipToEpubApp(rumps.App):
     """Menu bar application for ClipToEpub"""
 
@@ -103,6 +118,8 @@ class ClipToEpubApp(rumps.App):
         # Load existing configuration
         self.load_config()
         ensure_llm_config(self.config)
+
+        _warm_mac_keyboard_apis()
 
         # Initialize converter
         self.converter = None
@@ -613,12 +630,15 @@ class ClipToEpubApp(rumps.App):
 
         # Guard against macOS constant missing in some PyObjC versions
         try:
-            from Quartz import CGEventKeyboardGetUnicodeString  # type: ignore
-            _ = CGEventKeyboardGetUnicodeString
+            from Quartz import (  # type: ignore
+                CGEventKeyboardGetUnicodeString,
+                CFRunLoopAddSource,
+            )
+            _ = CGEventKeyboardGetUnicodeString, CFRunLoopAddSource
         except Exception:
             if self.config.get("show_notifications", True):
                 self.notify("LLM Hotkey Disabled", "macOS keyboard API not available; use the menu item")
-            print("Quartz constant CGEventKeyboardGetUnicodeString missing; disabling LLM hotkey listener")
+            print("Quartz keyboard APIs missing; disabling LLM hotkey listener")
             return
 
         self.llm_hotkey = parse_hotkey_string(self.config.get("anthropic_hotkey", "cmd+shift+l")) or set()
