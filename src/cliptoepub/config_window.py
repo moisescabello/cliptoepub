@@ -37,6 +37,7 @@ class ConfigWindow:
         default_hotkey = "ctrl+shift+e" if sys.platform.startswith("win") else "cmd+shift+e"
         self.default_config = {
             "output_directory": str(paths.get_default_output_dir()),
+            "output_format": "both",  # "epub", "markdown", or "both"
             "hotkey": default_hotkey,
             "author": "Unknown Author",
             "language": "en",
@@ -110,6 +111,7 @@ class ConfigWindow:
 
             # Update config from GUI elements
             self.config["output_directory"] = self.output_var.get()
+            self.config["output_format"] = self.output_format_var.get() or self.default_config["output_format"]
             # Normalize hotkey string
             self.config["hotkey"] = self._normalize_hotkey(self.hotkey_var.get())
             self.config["author"] = self.author_var.get()
@@ -355,11 +357,23 @@ class ConfigWindow:
         ttk.Entry(output_frame, textvariable=self.output_var, width=40).pack(side=tk.LEFT, padx=(0, 5))
         ttk.Button(output_frame, text="Browse...", command=self.browse_folder).pack(side=tk.LEFT)
 
+        # Output Format
+        ttk.Label(main_frame, text="Output Format:").grid(row=3, column=0, sticky=tk.W, pady=5)
+        self.output_format_var = tk.StringVar(value=str(self.config.get("output_format", self.default_config["output_format"])))
+        output_format_combo = ttk.Combobox(
+            main_frame,
+            textvariable=self.output_format_var,
+            values=["epub", "markdown", "both"],
+            width=27,
+            state="readonly"
+        )
+        output_format_combo.grid(row=3, column=1, sticky=tk.W, pady=5)
+
         # Hotkey
-        ttk.Label(main_frame, text="Capture Hotkey:").grid(row=3, column=0, sticky=tk.W, pady=5)
+        ttk.Label(main_frame, text="Capture Hotkey:").grid(row=4, column=0, sticky=tk.W, pady=5)
         self.hotkey_var = tk.StringVar(value=self.config.get("hotkey", self.default_config["hotkey"]))
         hotkey_frame = ttk.Frame(main_frame)
-        hotkey_frame.grid(row=3, column=1, sticky=(tk.W), pady=5)
+        hotkey_frame.grid(row=4, column=1, sticky=(tk.W), pady=5)
         self.hotkey_entry = ttk.Entry(hotkey_frame, textvariable=self.hotkey_var, width=30)
         self.hotkey_entry.pack(side=tk.LEFT)
         self._recording_hotkey = False
@@ -377,12 +391,12 @@ class ConfigWindow:
         ttk.Button(hotkey_frame, text="Reset", command=_reset_hotkey).pack(side=tk.LEFT, padx=(5, 0))
 
         # Author
-        ttk.Label(main_frame, text="Default Author:").grid(row=4, column=0, sticky=tk.W, pady=5)
+        ttk.Label(main_frame, text="Default Author:").grid(row=5, column=0, sticky=tk.W, pady=5)
         self.author_var = tk.StringVar(value=self.config["author"])
-        ttk.Entry(main_frame, textvariable=self.author_var, width=30).grid(row=4, column=1, sticky=tk.W, pady=5)
+        ttk.Entry(main_frame, textvariable=self.author_var, width=30).grid(row=5, column=1, sticky=tk.W, pady=5)
 
         # Language
-        ttk.Label(main_frame, text="Language:").grid(row=5, column=0, sticky=tk.W, pady=5)
+        ttk.Label(main_frame, text="Language:").grid(row=6, column=0, sticky=tk.W, pady=5)
         self.language_var = tk.StringVar(value=self.config["language"])
         language_combo = ttk.Combobox(
             main_frame,
@@ -391,10 +405,10 @@ class ConfigWindow:
             width=27,
             state="readonly"
         )
-        language_combo.grid(row=5, column=1, sticky=tk.W, pady=5)
+        language_combo.grid(row=6, column=1, sticky=tk.W, pady=5)
 
         # Style (populate from templates dir if present)
-        ttk.Label(main_frame, text="CSS Style:").grid(row=6, column=0, sticky=tk.W, pady=5)
+        ttk.Label(main_frame, text="CSS Style:").grid(row=7, column=0, sticky=tk.W, pady=5)
         self.style_var = tk.StringVar(value=self.config["style"])
         styles = ["default", "minimal", "modern"]
         try:
@@ -413,18 +427,18 @@ class ConfigWindow:
             width=27,
             state="readonly"
         )
-        style_combo.grid(row=6, column=1, sticky=tk.W, pady=5)
+        style_combo.grid(row=7, column=1, sticky=tk.W, pady=5)
 
         # Chapter Words
-        ttk.Label(main_frame, text="Words per Chapter:").grid(row=7, column=0, sticky=tk.W, pady=5)
+        ttk.Label(main_frame, text="Words per Chapter:").grid(row=8, column=0, sticky=tk.W, pady=5)
         self.chapter_words_var = tk.StringVar(value=str(self.config["chapter_words"]))
         chapter_frame = ttk.Frame(main_frame)
-        chapter_frame.grid(row=7, column=1, sticky=tk.W, pady=5)
+        chapter_frame.grid(row=8, column=1, sticky=tk.W, pady=5)
         ttk.Entry(chapter_frame, textvariable=self.chapter_words_var, width=10).pack(side=tk.LEFT)
         ttk.Label(chapter_frame, text="(100-50000)").pack(side=tk.LEFT, padx=(5, 0))
 
         # Separator
-        ttk.Separator(main_frame, orient='horizontal').grid(row=8, column=0, columnspan=2, sticky=(tk.W, tk.E), pady=15)
+        ttk.Separator(main_frame, orient='horizontal').grid(row=9, column=0, columnspan=2, sticky=(tk.W, tk.E), pady=15)
 
         # Checkboxes
         self.auto_open_var = tk.BooleanVar(value=self.config["auto_open"])
@@ -432,21 +446,21 @@ class ConfigWindow:
             main_frame,
             text="Auto-open ePub files after creation",
             variable=self.auto_open_var
-        ).grid(row=9, column=0, columnspan=2, sticky=tk.W, pady=5)
+        ).grid(row=10, column=0, columnspan=2, sticky=tk.W, pady=5)
 
         self.notifications_var = tk.BooleanVar(value=self.config["show_notifications"])
         ttk.Checkbutton(
             main_frame,
             text="Show notifications",
             variable=self.notifications_var
-        ).grid(row=10, column=0, columnspan=2, sticky=tk.W, pady=5)
+        ).grid(row=11, column=0, columnspan=2, sticky=tk.W, pady=5)
 
         # Separator
-        ttk.Separator(main_frame, orient='horizontal').grid(row=11, column=0, columnspan=2, sticky=(tk.W, tk.E), pady=15)
+        ttk.Separator(main_frame, orient='horizontal').grid(row=12, column=0, columnspan=2, sticky=(tk.W, tk.E), pady=15)
 
         # YouTube subtitles
         yt_frame = ttk.LabelFrame(main_frame, text="YouTube Subtitles", padding="10")
-        yt_frame.grid(row=12, column=0, columnspan=2, sticky=(tk.W, tk.E), pady=10)
+        yt_frame.grid(row=13, column=0, columnspan=2, sticky=(tk.W, tk.E), pady=10)
         langs = [
             ("en", "English"),
             ("es", "Spanish"),

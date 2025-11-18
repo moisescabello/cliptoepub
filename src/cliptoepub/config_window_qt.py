@@ -94,6 +94,8 @@ except ImportError as e:
 DEFAULT_HOTKEY = "ctrl+shift+e" if sys.platform.startswith("win") else "cmd+shift+e"
 DEFAULTS = {
     "output_directory": str(paths.get_default_output_dir()),
+    "output_format": "both",  # "epub", "markdown", or "both"
+    "output_format": "both",  # "epub", "markdown", or "both"
     "hotkey": DEFAULT_HOTKEY,
     "author": "Unknown Author",
     "language": "en",
@@ -272,6 +274,28 @@ if HAVE_QT:
             row_layout.addWidget(self.output_edit)
             row_layout.addWidget(browse_btn)
             form.addRow("Output Directory:", row)
+
+            # Output format (epub / markdown / both)
+            self.output_format_combo = QComboBox()
+            self.output_format_combo.addItems(["epub", "markdown", "both"])
+            fmt = str(self.config.get("output_format", DEFAULTS["output_format"]))
+            idx = self.output_format_combo.findText(fmt)
+            if idx < 0:
+                idx = self.output_format_combo.findText(DEFAULTS["output_format"])
+            if idx >= 0:
+                self.output_format_combo.setCurrentIndex(idx)
+            form.addRow("Output Format:", self.output_format_combo)
+
+            # Output format (epub / markdown / both)
+            self.output_format_combo = QComboBox()
+            self.output_format_combo.addItems(["epub", "markdown", "both"])
+            fmt = str(self.config.get("output_format", DEFAULTS["output_format"]))
+            idx = self.output_format_combo.findText(fmt)
+            if idx < 0:
+                idx = self.output_format_combo.findText(DEFAULTS["output_format"])
+            if idx >= 0:
+                self.output_format_combo.setCurrentIndex(idx)
+            form.addRow("Output Format:", self.output_format_combo)
 
             # Hotkey (capture)
             hotkey_row = QWidget()
@@ -774,6 +798,7 @@ if HAVE_QT:
             # Gather values and persist
             cfg = {
                 "output_directory": self.output_edit.text().strip() or DEFAULTS["output_directory"],
+                "output_format": str(getattr(self, "output_format_combo", None).currentText() if getattr(self, "output_format_combo", None) else DEFAULTS["output_format"]),
                 "hotkey": _normalize_from_qt(self.hotkey_edit.keySequence()),
                 "author": self.author_edit.text().strip() or DEFAULTS["author"],
                 "language": self.language_combo.currentText(),

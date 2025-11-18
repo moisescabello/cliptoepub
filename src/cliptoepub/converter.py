@@ -97,6 +97,7 @@ class ClipboardToEpubConverter:
         default_author: str = "Unknown Author",
         default_language: str = "en",
         default_style: str = "default",
+        output_format: str = "both",
         chapter_words: int = 5000,
         enable_ocr: bool = False,
         enable_cache: bool = True,
@@ -124,6 +125,7 @@ class ClipboardToEpubConverter:
         self.default_author = default_author
         self.default_language = default_language
         self.default_style = default_style
+        self.output_format = (output_format or "both").strip().lower()
         self.chapter_words = chapter_words
         self.enable_ocr = enable_ocr
         self.enable_cache = enable_cache
@@ -335,7 +337,33 @@ class ClipboardToEpubConverter:
             if tags:
                 metadata["tags"] = list(tags)
 
+            # Create ePub (primary output when enabled)
             path = await self._create_epub_async(processed, metadata)
+
+            # Save Markdown companion for LLM outputs when configured
+            try:
+                fmt = str(getattr(self, "output_format", "both")).strip().lower()
+                if fmt in ("markdown", "both") and text and isinstance(text, str):
+                    from pathlib import Path as _Path
+
+                    # Only generate .md when we have an ePub path to colocate it
+                    base_dir = None
+                    if path:
+                        base_dir = _Path(path)
+                    else:
+                        # Fallback: derive from title in the configured output_dir
+                        title = metadata.get("title") or processed.get("metadata", {}).get("title") or "LLM_Result"
+                        safe_title = "".join(c if c.isalnum() or c in (" ", "_", "-") else "_" for c in str(title))[:100]
+                        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S_%f")
+                        base_dir = self.output_dir / f"{safe_title}_{timestamp}.epub"
+                    try:
+                        md_path = base_dir.with_suffix(".md")
+                        md_path.write_text(text, encoding="utf-8")
+                    except Exception as e:
+                        logger.warning(f"Could not save Markdown companion file: {e}")
+            except Exception:
+                # Never fail conversion solely due to Markdown save issues
+                pass
 
             if self.history and path:
                 try:

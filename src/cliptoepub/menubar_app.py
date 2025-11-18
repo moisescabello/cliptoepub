@@ -97,6 +97,7 @@ class ClipToEpubApp(rumps.App):
         # Default configuration
         self.config = {
             "output_directory": str(paths.get_default_output_dir()),
+            "output_format": "both",  # "epub", "markdown", or "both"
             "hotkey": "cmd+shift+e",
             "author": "Unknown Author",
             "language": "en",
@@ -232,6 +233,7 @@ class ClipToEpubApp(rumps.App):
                 default_author=self.config["author"],
                 default_language=self.config["language"],
                 default_style=self.config["style"],
+                output_format=str(self.config.get("output_format", "both")),
                 chapter_words=self.config["chapter_words"],
                 max_async_workers=int(self.config.get("max_async_workers", 3)),
                 hotkey_combo=hotkey_combo,
@@ -461,6 +463,19 @@ class ClipToEpubApp(rumps.App):
                     title = sanitize_first_line(md)
                     tags = ["anthropic"] if provider_name != "openrouter" else ["openrouter"]
                     path = self.converter.convert_text_to_epub(md, suggested_title=title, tags=tags) if self.converter else None
+
+                    # Optionally save Markdown alongside ePub depending on output_format
+                    try:
+                        fmt = str(self.config.get("output_format", "both")).lower()
+                        if fmt in ("markdown", "both") and md and path:
+                            try:
+                                from pathlib import Path as _Path
+                                md_path = _Path(path).with_suffix(".md")
+                                md_path.write_text(md, encoding="utf-8")
+                            except Exception as e:
+                                print(f"Warning: Could not save Markdown file: {e}")
+                    except Exception:
+                        pass
 
                     if path:
                         if self.config["show_notifications"]:
